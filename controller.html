@@ -1,90 +1,37 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>ASP.NET API Controller Generator</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background: #f7f7f7;
-        }
-
-        h2 {
-            color: #333;
-        }
-
-        label {
-            display: block;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-
-        input {
-            width: 100%;
-            padding: 5px;
-            margin-top: 3px;
-        }
-
-        button {
-            margin-top: 15px;
-            padding: 10px 20px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        textarea {
-            width: 100%;
-            height: 400px;
-            margin-top: 20px;
-            font-family: Consolas, monospace;
-            font-size: 13px;
-        }
-
-        .container {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 5px rgba(0,0,0,0.2);
-        }
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f7f7f7; }
+        .container { max-width: 500px; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
+        .field { display: flex; align-items: center; margin: 8px 0; gap: 10px; flex-wrap: wrap; }
+        .field label { font-weight: bold; flex: 0 0 160px; font-size: 14px; }
+        input, button, textarea { padding: 6px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; }
+        input, textarea { flex: 1; min-width: 200px; }
+        button { margin-top: 15px; padding: 10px 20px; cursor: pointer; background: #007bff; color: white; border: none; }
+        button:hover { background: #0056b3; }
+        textarea { width: 100%; height: 400px; margin-top: 20px; font: 13px Consolas, monospace; resize: vertical; }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>ASP.NET API Controller Generator</h2>
-        <label>Namespace Name:</label>
-        <input type="text" id="namespace" placeholder="e.g. MyApp.API.Controllers">
 
-        <label>Controller Name:</label>
-        <input type="text" id="controller" placeholder="e.g. RequisitionController">
-
-        <label>Repository Name:</label>
-        <input type="text" id="repository" placeholder="e.g. IRequisitionRepository">
-
-        <label>Is Asynchronous (default Yes):</label>
-        <input type="checkbox" id="isAsync" checked>
-
-        <label>Wrap Try-Catch (default Yes):</label>
-        <input type="checkbox" id="wrapTryCatch" checked>
-
-        <label>Create Action Name:</label>
-        <input type="text" id="createAction" placeholder="e.g. Save">
-
-        <label>Read (All) Action Name:</label>
-        <input type="text" id="readAllAction" placeholder="e.g. GetAll">
-
-        <label>Read (One) Action Name:</label>
-        <input type="text" id="readOneAction" placeholder="e.g. GetById">
-
-        <label>Update Action Name:</label>
-        <input type="text" id="updateAction" placeholder="e.g. Update">
-
-        <label>Delete Action Name:</label>
-        <input type="text" id="deleteAction" placeholder="e.g. Delete">
+        <div class="field"><label>Namespace Name:</label><input type="text" id="namespace" placeholder="e.g. MyApp.API.Controllers"></div>
+        <div class="field"><label>Controller Name:</label><input type="text" id="controller" placeholder="e.g. RequisitionController"></div>
+        <div class="field"><label>Repository Name:</label><input type="text" id="repository" placeholder="e.g. IRequisitionRepository"></div>
+        <div class="field"><label>Is Asynchronous:</label><input type="checkbox" id="isAsync" checked></div>
+        <div class="field"><label>Wrap Try-Catch:</label><input type="checkbox" id="wrapTryCatch" checked></div>
+        <div class="field"><label>Create Action Name:</label><input type="text" id="createAction" placeholder="e.g. Save"></div>
+        <div class="field"><label>Read (All) Action Name:</label><input type="text" id="readAllAction" placeholder="e.g. GetAll"></div>
+        <div class="field"><label>Read (One) Action Name:</label><input type="text" id="readOneAction" placeholder="e.g. GetById"></div>
+        <div class="field"><label>Update Action Name:</label><input type="text" id="updateAction" placeholder="e.g. Update"></div>
+        <div class="field"><label>Delete Action Name:</label><input type="text" id="deleteAction" placeholder="e.g. Delete"></div>
 
         <button onclick="generateController()">Generate Controller</button>
-
-        <textarea id="output" readonly placeholder="Generated controller code will appear here..."></textarea>
+        <textarea id="output" placeholder="Generated controller code will appear here..." readonly></textarea>
     </div>
 
     <script>
@@ -109,12 +56,12 @@
 
             // repo variable name (_camelCaseRepository)
             let repoVar = "_" + toCamelCase(repository) + "Repository";
-
+            let controllerName = controller.includes("Controller") ? controller : controller + "Controller";
             let code = `using Microsoft.AspNetCore.Mvc;\n\n`;
             code += `namespace ${ns}\n{\n`;
             code += `    [ApiController]\n`;
             code += `    [Route("api/[controller]")]\n`;
-            code += `    public class ${controller} : ControllerBase\n    {\n`;
+            code += `    public class ${controllerName} : ControllerBase\n    {\n`;
             code += `        private readonly ${repository} ${repoVar};\n\n`;
             code += `        public ${controller}(${repository} ${repoVar.replace("_", "")})\n        {\n`;
             code += `            ${repoVar} = ${repoVar.replace("_", "")};\n        }\n\n`;
@@ -139,7 +86,7 @@
                 : controller + "DTO";
 
             addMethod(dtoName, createAction, "Post", createAction, `[FromBody] ${dtoName} dto`);
-            addMethod(`IEnumerable<${dtoName}>`, readAllAction, "Get", "", "");
+            addMethod(`IEnumerable<${dtoName}>`, readAllAction, "Get", "GetList", "");
             addMethod(dtoName, readOneAction, "Get", "{id}", "long id");
             addMethod(dtoName, updateAction, "Put", "update", `[FromBody] ${dtoName} dto`);
             addMethod("bool", deleteAction, "Delete", "{id}", "long id");
