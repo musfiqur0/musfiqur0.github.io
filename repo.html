@@ -79,8 +79,8 @@
             // Create
             addMethod(
                 `${isAsync ? "public async Task" : "public void"} ${createMethod}(${entity} entity)`,
-                isAsync ? `_context.${entity}.Add(entity);\n                await _context.SaveChangesAsync();`
-                    : `_context.${entity}.Add(entity);\n                _context.SaveChanges();`
+                isAsync ? `_context.${entity}.Add(entity);\n`
+                    : `_context.${entity}.Add(entity);\n`
             );
 
             // Read All
@@ -100,15 +100,15 @@
             // Update
             addMethod(
                 `${isAsync ? "public async Task" : "public void"} ${updateMethod}(${entity} entity)`,
-                isAsync ? `_context.${entity}.Update(entity);\n                await _context.SaveChangesAsync();`
-                    : `_context.${entity}.Update(entity);\n                _context.SaveChanges();`
+                isAsync ? `_context.${entity}.Update(entity);\n`
+                    : `_context.${entity}.Update(entity);\n`
             );
 
             // Delete
             addMethod(
                 `${isAsync ? "public async Task" : "public void"} ${deleteMethod}(${pkType} id)`,
-                isAsync ? `var entity = await _context.${entity}.FindAsync(id);\n                if (entity != null) {\n                    _context.${entity}.Remove(entity);\n                    await _context.SaveChangesAsync();\n                }`
-                    : `var entity = _context.${entity}.Find(id);\n                if (entity != null) {\n                    _context.${entity}.Remove(entity);\n                    _context.SaveChanges();\n                }`
+                isAsync ? `var entity = await _context.${entity}.FindAsync(id);\n                if (entity != null) {\n                    _context.${entity}.Remove(entity);\n                }`
+                    : `var entity = _context.${entity}.Find(id);\n                if (entity != null) {\n                    _context.${entity}.Remove(entity);\n                }`
             );
 
             code += `    }\n}`;
