@@ -21,7 +21,7 @@
 
         <div class="field"><label>Namespace Name:</label><input type="text" id="namespace" placeholder="e.g. MyApp.API.Controllers"></div>
         <div class="field"><label>Controller Name:</label><input type="text" id="controller" placeholder="e.g. RequisitionController"></div>
-        <div class="field"><label>Repository Name:</label><input type="text" id="repository" placeholder="e.g. IRequisitionRepository"></div>
+        <div class="field"><label>Service Name:</label><input type="text" id="service" placeholder="e.g. IRequisitionService"></div>
         <div class="field"><label>Is Asynchronous:</label><input type="checkbox" id="isAsync" checked></div>
         <div class="field"><label>Wrap Try-Catch:</label><input type="checkbox" id="wrapTryCatch" checked></div>
         <div class="field"><label>Create Action Name:</label><input type="text" id="createAction" placeholder="e.g. Save"></div>
@@ -41,9 +41,9 @@
         }
 
         function generateController() {
-            const ns = document.getElementById('namespace').value.trim();
-            const controller = document.getElementById('controller').value.trim();
-            const repository = document.getElementById('repository').value.trim();
+            const ns = document.getElementById('namespace').value.trim() || "Demo";
+            const controller = document.getElementById('controller').value.trim() || "Demo";
+            const service = document.getElementById('service').value.trim() || "Demo";
 
             const isAsync = document.getElementById('isAsync').checked;
             const wrapTryCatch = document.getElementById('wrapTryCatch').checked;
@@ -54,17 +54,18 @@
             const updateAction = document.getElementById('updateAction').value.trim() || "Update";
             const deleteAction = document.getElementById('deleteAction').value.trim() || "Delete";
 
-            // repo variable name (_camelCaseRepository)
-            let repoVar = "_" + toCamelCase(repository) + "Repository";
+            // repo variable name (_camelCaseService)
+            let svcVar = "_" + toCamelCase(service) + "Service";
             let controllerName = controller.includes("Controller") ? controller : controller + "Controller";
+            let serviceName = service.includes("Service") ? service : service + "Service";
             let code = `using Microsoft.AspNetCore.Mvc;\n\n`;
             code += `namespace ${ns}\n{\n`;
             code += `    [ApiController]\n`;
             code += `    [Route("api/[controller]")]\n`;
             code += `    public class ${controllerName} : ControllerBase\n    {\n`;
-            code += `        private readonly ${repository} ${repoVar};\n\n`;
-            code += `        public ${controllerName}(${repository} ${repoVar.replace("_", "")})\n        {\n`;
-            code += `            ${repoVar} = ${repoVar.replace("_", "")};\n        }\n\n`;
+            code += `        private readonly ${serviceName} ${svcVar};\n\n`;
+            code += `        public ${controllerName}(${serviceName} ${svcVar.replace("_", "")})\n        {\n`;
+            code += `            ${svcVar} = ${svcVar.replace("_", "")};\n        }\n\n`;
 
             function addMethod(returnType, name, verb, route, param) {
                 code += `        [Http${verb}]\n`;
@@ -73,8 +74,8 @@
                 code += isAsync ? `        public async Task<${returnType}> ${name}(${param})\n        {\n`
                                     : `        public ${returnType} ${name}(${param})\n        {\n`;
                 code += wrapTryCatch ? `            try\n            {\n`: ``;
-                code += isAsync ? `                return await ${repoVar}.${name}(${param ? param.split(" ")[1] : ""});\n`
-                                    : `                return ${repoVar}.${name}(${param ? param.split(" ")[1] : ""});\n`;
+                code += isAsync ? `                return await ${svcVar}.${name}(${param ? param.split(" ")[1] : ""});\n`
+                                    : `                return ${svcVar}.${name}(${param ? param.split(" ")[1] : ""});\n`;
                 code += wrapTryCatch ? `            }\n            catch (Exception ex)\n            {\n`:``;
                 code += wrapTryCatch ? `                throw ex;\n` : ``;
                 code += wrapTryCatch ? `            }\n`:``;
@@ -88,7 +89,7 @@
             addMethod(dtoName, createAction, "Post", createAction, `[FromBody] ${dtoName} dto`);
             addMethod(`IEnumerable<${dtoName}>`, readAllAction, "Get", "GetList", "");
             addMethod(dtoName, readOneAction, "Get", "{id}", "long id");
-            addMethod(dtoName, updateAction, "Put", "update", `[FromBody] ${dtoName} dto`);
+            addMethod(dtoName, updateAction, "Put", "Update", `[FromBody] ${dtoName} dto`);
             addMethod("bool", deleteAction, "Delete", "{id}", "long id");
 
             code += `    }\n}`;
