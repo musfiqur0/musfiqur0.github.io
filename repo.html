@@ -1,0 +1,117 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ASP.NET Repository Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f7f7f7; }
+        .container { max-width: 500px; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
+        h2 { color: #333; margin-top: 0; margin-bottom: 15px; }
+        .field { display: flex; align-items: center; margin: 8px 0; gap: 10px; flex-wrap: wrap; }
+        .field label { font-weight: bold; flex: 0 0 160px; font-size: 14px; }
+        input, button, textarea { padding: 6px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; }
+        input, textarea { flex: 1; min-width: 200px; }
+        button { margin-top: 15px; padding: 10px 20px; cursor: pointer; background: #007bff; color: white; border: none; }
+        button:hover { background: #0056b3; }
+        textarea { width: 100%; height: 400px; margin-top: 20px; font: 13px Consolas, monospace; resize: vertical; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>ASP.NET Repository Generator</h2>
+
+        <div class="field"><label>Namespace Name:</label><input type="text" id="namespace" placeholder="e.g. MyApp.Data.Repositories"></div>
+        <div class="field"><label>Repository Name:</label><input type="text" id="repository" placeholder="e.g. ProjectRepository"></div>
+        <div class="field"><label>DbContext Name:</label><input type="text" id="dbcontext" placeholder="e.g. AppDbContext"></div>
+        <div class="field"><label>Entity Name:</label><input type="text" id="entity" placeholder="e.g. SET_Project"></div>
+        <div class="field"><label>PK Type:</label><input type="text" id="pkType" placeholder="long (default)"></div>
+        <div class="field"><label>Is Async:</label><input type="checkbox" id="isAsync" checked></div>
+        <div class="field"><label>AsNoTracking:</label><input type="checkbox" id="isAsNoTracking"></div>
+        <div class="field"><label>Wrap Try-Catch:</label><input type="checkbox" id="wrapTryCatch" checked></div>
+        <div class="field"><label>Create Method:</label><input type="text" id="createMethod" placeholder="e.g. AddAsync"></div>
+        <div class="field"><label>Read (All):</label><input type="text" id="readAllMethod" placeholder="e.g. GetListAsync"></div>
+        <div class="field"><label>Read (One):</label><input type="text" id="readOneMethod" placeholder="e.g. GetByIdAsync"></div>
+        <div class="field"><label>Update Method:</label><input type="text" id="updateMethod" placeholder="e.g. UpdateAsync"></div>
+        <div class="field"><label>Delete Method:</label><input type="text" id="deleteMethod" placeholder="e.g. DeleteAsync"></div>
+
+        <button onclick="generateRepository()">Generate Repository</button>
+        <textarea id="output" placeholder="Generated repository code will appear here..." readonly></textarea>
+    </div>
+
+
+    <script>
+        function generateRepository() {
+            const ns = document.getElementById('namespace').value.trim() || "Demo";
+            const repoName = document.getElementById('repository').value.trim() || "Demo";
+            const dbContext = document.getElementById('dbcontext').value.trim() || "AppDbContext";
+            const entity = document.getElementById('entity').value.trim() || repoName;
+            const pkType = document.getElementById('pkType').value.trim() || "long";
+
+            const isAsync = document.getElementById('isAsync').checked;
+            const asNoTracking = document.getElementById('isAsNoTracking').checked;
+            const wrapTryCatch = document.getElementById('wrapTryCatch').checked;
+
+            const createMethod = document.getElementById('createMethod').value.trim() || "AddAsync";
+            const readAllMethod = document.getElementById('readAllMethod').value.trim() || "GetListAsync";
+            const readOneMethod = document.getElementById('readOneMethod').value.trim() || "GetByIdAsync";
+            const updateMethod = document.getElementById('updateMethod').value.trim() || "UpdateAsync";
+            const deleteMethod = document.getElementById('deleteMethod').value.trim() || "DeleteAsync";
+
+            let code = `using Microsoft.EntityFrameworkCore;\n\n`;
+            code += `namespace ${ns}\n{\n`;
+            code += `    public class ${repoName}\n    {\n`;
+            code += `        private readonly ${dbContext} _context;\n\n`;
+            code += `        public ${repoName}(${dbContext} context)\n        {\n`;
+            code += `            _context = context;\n        }\n\n`;
+
+            function addMethod(signature, body) {
+                code += `        ${signature}\n        {\n`;
+                if (wrapTryCatch) {
+                    code += `            try\n            {\n                ${body}\n            }\n            catch (Exception ex)\n            {\n                throw ex;\n            }\n`;
+                } else {
+                    code += `            ${body}\n`;
+                }
+                code += `        }\n\n`;
+            }
+
+            // Create
+            addMethod(
+                `${isAsync ? "public async Task" : "public void"} ${createMethod}(${entity} entity)`,
+                isAsync ? `_context.${entity}.Add(entity);\n                await _context.SaveChangesAsync();`
+                    : `_context.${entity}.Add(entity);\n                _context.SaveChanges();`
+            );
+
+            // Read All
+            addMethod(
+                `${isAsync ? "public async Task<List" : "public List"}<${entity}> ${readAllMethod}()`,
+                isAsync ? `return await _context.${entity}${asNoTracking ? ".AsNoTracking()" : ""}.ToListAsync();`
+                    : `return _context.${entity}${asNoTracking ? ".AsNoTracking()" : ""}.ToList();`
+            );
+
+            // Read One
+            addMethod(
+                `${isAsync ? "public async Task" : "public"} ${entity}? ${readOneMethod}(${pkType} id)`,
+                isAsync ? `return await _context.${entity}.FirstOrDefaultAsync(x => x.id == id);`
+                    : `return _context.${entity}.FirstOrDefault(x => x.id == id);`
+            );
+
+            // Update
+            addMethod(
+                `${isAsync ? "public async Task" : "public void"} ${updateMethod}(${entity} entity)`,
+                isAsync ? `_context.${entity}.Update(entity);\n                await _context.SaveChangesAsync();`
+                    : `_context.${entity}.Update(entity);\n                _context.SaveChanges();`
+            );
+
+            // Delete
+            addMethod(
+                `${isAsync ? "public async Task" : "public void"} ${deleteMethod}(${pkType} id)`,
+                isAsync ? `var entity = await _context.${entity}.FindAsync(id);\n                if (entity != null) {\n                    _context.${entity}.Remove(entity);\n                    await _context.SaveChangesAsync();\n                }`
+                    : `var entity = _context.${entity}.Find(id);\n                if (entity != null) {\n                    _context.${entity}.Remove(entity);\n                    _context.SaveChanges();\n                }`
+            );
+
+            code += `    }\n}`;
+            document.getElementById('output').value = code;
+        }
+    </script>
+</body>
+</html>
