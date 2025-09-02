@@ -42,9 +42,9 @@
     <script>
         function generateRepository() {
             const ns = document.getElementById('namespace').value.trim() || "Demo";
-            const repoName = document.getElementById('repository').value.trim() || "Demo";
+            const repository = document.getElementById('repository').value.trim() || "Demo";
             const dbContext = document.getElementById('dbcontext').value.trim() || "AppDbContext";
-            const entity = document.getElementById('entity').value.trim() || repoName;
+            const entity = document.getElementById('entity').value.trim() || repository;
             const pkType = document.getElementById('pkType').value.trim() || "long";
 
             const isAsync = document.getElementById('isAsync').checked;
@@ -57,11 +57,13 @@
             const updateMethod = document.getElementById('updateMethod').value.trim() || "UpdateAsync";
             const deleteMethod = document.getElementById('deleteMethod').value.trim() || "DeleteAsync";
 
+            let repositoryName = repository.includes("Repository") ? repository : repository + "Repository";
+
             let code = `using Microsoft.EntityFrameworkCore;\n\n`;
             code += `namespace ${ns}\n{\n`;
-            code += `    public class ${repoName}\n    {\n`;
+            code += `    public class ${repositoryName}\n    {\n`;
             code += `        private readonly ${dbContext} _context;\n\n`;
-            code += `        public ${repoName}(${dbContext} context)\n        {\n`;
+            code += `        public ${repositoryName}(${dbContext} context)\n        {\n`;
             code += `            _context = context;\n        }\n\n`;
 
             function addMethod(signature, body) {
