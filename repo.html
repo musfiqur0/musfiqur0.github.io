@@ -79,8 +79,8 @@
             // Create
             addMethod(
                 `${isAsync ? "public async Task" : "public void"} ${createMethod}(${entity} entity)`,
-                isAsync ? `_context.${entity}.Add(entity);\n`
-                    : `_context.${entity}.Add(entity);\n`
+                isAsync ? `_context.${entity}.Add(entity);`
+                    : `_context.${entity}.Add(entity);`
             );
 
             // Read All
@@ -100,8 +100,8 @@
             // Update
             addMethod(
                 `${isAsync ? "public async Task" : "public void"} ${updateMethod}(${entity} entity)`,
-                isAsync ? `_context.${entity}.Update(entity);\n`
-                    : `_context.${entity}.Update(entity);\n`
+                isAsync ? `_context.${entity}.Update(entity);`
+                    : `_context.${entity}.Update(entity);`
             );
 
             // Delete
