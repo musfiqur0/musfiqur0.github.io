@@ -63,7 +63,7 @@
             code += `    [Route("api/[controller]")]\n`;
             code += `    public class ${controllerName} : ControllerBase\n    {\n`;
             code += `        private readonly ${repository} ${repoVar};\n\n`;
-            code += `        public ${controller}(${repository} ${repoVar.replace("_", "")})\n        {\n`;
+            code += `        public ${controllerName}(${repository} ${repoVar.replace("_", "")})\n        {\n`;
             code += `            ${repoVar} = ${repoVar.replace("_", "")};\n        }\n\n`;
 
             function addMethod(returnType, name, verb, route, param) {
