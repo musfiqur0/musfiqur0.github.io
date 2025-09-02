@@ -49,7 +49,7 @@
             const wrapTryCatch = document.getElementById('wrapTryCatch').checked;
 
             const createAction = document.getElementById('createAction').value.trim() || "Save";
-            const readAllAction = document.getElementById('readAllAction').value.trim() || "GetAll";
+            const readAllAction = document.getElementById('readAllAction').value.trim() || "GetList";
             const readOneAction = document.getElementById('readOneAction').value.trim() || "GetById";
             const updateAction = document.getElementById('updateAction').value.trim() || "Update";
             const deleteAction = document.getElementById('deleteAction').value.trim() || "Delete";
@@ -74,8 +74,8 @@
                 code += isAsync ? `        public async Task<${returnType}> ${name}(${param})\n        {\n`
                                     : `        public ${returnType} ${name}(${param})\n        {\n`;
                 code += wrapTryCatch ? `            try\n            {\n`: ``;
-                code += isAsync ? `                return await ${svcVar}.${name}(${param ? param.split(" ")[1] : ""});\n`
-                                    : `                return ${svcVar}.${name}(${param ? param.split(" ")[1] : ""});\n`;
+                code += isAsync ? `                return await ${svcVar}.${name}Async(${param ? param.split(" ")[2] : ""});\n`
+                                    : `                return ${svcVar}.${name}(${param ? param.split(" ")[2] : ""});\n`;
                 code += wrapTryCatch ? `            }\n            catch (Exception ex)\n            {\n`:``;
                 code += wrapTryCatch ? `                throw ex;\n` : ``;
                 code += wrapTryCatch ? `            }\n`:``;
