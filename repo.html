@@ -78,8 +78,8 @@
 
             // Create
             addMethod(
-                `${isAsync ? "public async Task" : "public void"} ${createMethod}(${entity} entity)`,
-                isAsync ? `_context.${entity}.Add(entity);`
+                `${isAsync ? "public async Task" : "public void"}${isAsync ? `<${entity}>` : `${entity}`} ${createMethod}(${entity} entity)`,
+                isAsync ? `await _context.${entity}.AddAsync(entity);`
                     : `_context.${entity}.Add(entity);`
             );
 
@@ -100,7 +100,7 @@
             // Update
             addMethod(
                 `${isAsync ? "public async Task" : "public void"} ${updateMethod}(${entity} entity)`,
-                isAsync ? `_context.${entity}.Update(entity);`
+                isAsync ? `await _context.${entity}.Update(entity);\n                await Task.CompletedTask;`
                     : `_context.${entity}.Update(entity);`
             );
 
