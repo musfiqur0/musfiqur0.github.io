@@ -57,13 +57,16 @@
       const updateMethod = document.getElementById('updateMethod').value.trim() || "UpdateAsync";
       const deleteMethod = document.getElementById('deleteMethod').value.trim() || "DeleteAsync";
 
+      let svcName = service.includes("Service") ? service : service + "Service";
+      let repositoryName = repository.includes("Repository") ? repository : repository + "Repository";
       let repoVar = "_" + toCamelCase(repository.replace(/^I/, "")); // e.g. IProjectRepository -> _projectRepository
+
 
       let code = `using System;\nusing System.Collections.Generic;\nusing System.Threading.Tasks;\n\n`;
       code += `namespace ${ns}\n{\n`;
-      code += `    public class ${service}\n    {\n`;
-      code += `        private readonly ${repository} ${repoVar};\n\n`;
-      code += `        public ${service}(${repository} ${repoVar.replace("_", "")})\n        {\n`;
+      code += `    public class ${svcName}\n    {\n`;
+      code += `        private readonly ${repositoryName} ${repoVar};\n\n`;
+      code += `        public ${svcName}(${repositoryName} ${repoVar.replace("_", "")})\n        {\n`;
       code += `            ${repoVar} = ${repoVar.replace("_", "")};\n        }\n\n`;
 
       function addMethod(returnType, name, paramType, paramName, bodyCall) {
